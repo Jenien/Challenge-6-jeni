@@ -1,0 +1,45 @@
+####
+POST http://localhost:9000/api/auth/register
+Content-Type: application/json
+
+{
+    "name":"ihihi",
+    "email":"uxup@gmail.com",
+    "password":"oke123"
+}
+
+###
+POST http://localhost:9000/api/auth/login
+Content-Type: application/json
+
+{
+    "email":"uxup@gmail.com",
+    "password":"oke123"
+}
+
+###
+POST http://localhost:9000/api/auth/login
+Content-Type: application/json
+
+{
+    "email":"admin1@gmail.com",
+    "password":"oke123"
+}
+
+###
+POST http://localhost:9000/api/auth/login
+Content-Type: application/json
+
+{
+    "email":"super@gmail.com",
+    "password":"super1"
+}
+###
+GET http://localhost:9000/api/auth/user
+
+
+####cars
+###
+GET http://localhost:9000/api/cars/show
+###
+GET http://localhost:9000/api/cars/show/2
