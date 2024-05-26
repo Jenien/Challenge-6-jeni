@@ -5,7 +5,7 @@ const verifyToken = (req, res, next) => {
   if (req.headers.authorization === undefined)
     return res.status(401).json({
       success: false,
-      message: 'Unauthorized',
+      message: 'Unauthorized, need Token',
       err: 'No token provided',
       data: null,
     });
@@ -15,7 +15,7 @@ const verifyToken = (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Unauthorized',
+      message: 'Unauthorized, need Token',
       err: 'No token provided',
       data: null,
     });

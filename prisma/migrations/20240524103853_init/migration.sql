@@ -26,6 +26,10 @@ CREATE TABLE "Car" (
     "startRent" TIMESTAMP(3),
     "finishRent" TIMESTAMP(3),
     "carType" "CarType" NOT NULL DEFAULT 'small',
+    "createdBy" TEXT NOT NULL,
+    "updatedBy" TEXT NOT NULL,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedBy" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

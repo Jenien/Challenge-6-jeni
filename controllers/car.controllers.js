@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import {prisma} from '../libs/prisma.js';
 // import multer from '../libs/multer.mjs'; // Uncomment this line if needed
+// import {verifyToken}from '../middlewares/verifyToken.js';
 const { PORT } = process.env;
 
 const createCar = async (req, res) => {
@@ -21,12 +22,16 @@ const createCar = async (req, res) => {
     } else {
       carType = 'large';
     }
+    const createdBy = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const updatedBy = createdBy;
 
     const carData = {
       name,
       price,
       image: imageUrl,
       carType,
+      createdBy:createdBy.name,
+      updatedBy:updatedBy.name,
     };
 
     const car = await prisma.car.create({
@@ -36,7 +41,7 @@ const createCar = async (req, res) => {
     res.status(201).json(car);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create car data' });
+    res.status(500).json({ error: 'Gagal Membuat Data Mobil' });
   }
 };
 
@@ -47,8 +52,8 @@ const updateCar = async (req, res) => {
       where: { id: parseInt(id) },
     });
 
-    if (!car) {
-      return res.status(404).json({ error: 'Car not found' });
+    if (!car || car.isDeleted) {
+      return res.status(404).json({ error: 'Data Mobil tidak ditemukan' });
     }
 
     const { name, price } = req.body;
@@ -62,15 +67,16 @@ const updateCar = async (req, res) => {
     } else {
       carType = 'large';
     }
+    const updatedBy = await prisma.user.findUnique({ where: { id: req.user.id } });
 
     let updatedCarData = {
       name,
       price,
       carType,
+      updatedBy: updatedBy.name,
     };
 
     if (req.file || !req.body.image) {
-      // Jika ada file yang diupload atau req body image kosong, update image
       const image = req.file ? req.file.filename : car.image;
       const imageUrl = req.file ? `http://localhost:${PORT}/uploads/${image}` : car.image;
       updatedCarData.image = imageUrl;
@@ -84,7 +90,7 @@ const updateCar = async (req, res) => {
     res.status(200).json(car);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update car data' });
+    res.status(500).json({ error: 'Gagal mengupdate data mobil' });
   }
 };
 
@@ -92,12 +98,12 @@ const updateCar = async (req, res) => {
 const deleteCar = async (req, res) => {
   const { id } = req.params;
   try {
-    const car = await prisma.car.findUnique({
+    let car = await prisma.car.findUnique({
       where: { id: parseInt(id) },
     });
 
     if (!car) {
-      return res.status(404).json({ error: 'Car not found' });
+      return res.status(404).json({ error: 'Data Mobil tidak ditemukan' });
     }
 
     if (car.image) {
@@ -107,40 +113,47 @@ const deleteCar = async (req, res) => {
         fs.unlinkSync(filePath);
       }
     }
+    const deletedBy = await prisma.user.findUnique({ where: { id: req.user.id } });
 
-    await prisma.car.delete({
+    car = await prisma.car.update({
       where: { id: parseInt(id) },
+      data: {
+        isDeleted: true,
+        deletedBy: deletedBy.name,
+      },
     });
 
-    res.status(200).json({ message: 'Car deleted successfully' });
+    res.status(200).json({ message: 'Mobil sudah di hapus, berhasil menambahkan isDeleted' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete car data' });
+    res.status(500).json({ error: 'Gagal menghapus data' });
   }
 };
 
 
+
 const getAllCars = async (req, res) => {
   try {
-    const cars = await prisma.car.findMany();
+    const cars = await prisma.car.findMany({
+      where: { isDeleted: false },
+    });
     res.status(200).json(cars);
   } catch (error) {
-    res.status(500).json({ error: 'Gagal mengambil data mobil' });
+    res.status(500).json({ error: 'Gagal Menampilkankan Data mobil' });
   }
 };
 
 const getCarsByType = async (req, res) => {
   const { type } = req.params;
-
   try {
     const cars = await prisma.car.findMany({
       where: {
         carType: type,
+        isDeleted: false,
       },
     });
-
     res.status(200).json(cars);
   } catch (error) {
-    res.status(500).json({ error: 'Gagal mengambil data mobil berdasarkan tipe' });
+    res.status(500).json({ error: 'Gagal menampilkan data mobil berdasarkan tipe' });
   }
 };
 
@@ -150,8 +163,8 @@ const getCarById = async (req, res) => {
     const car = await prisma.car.findUnique({
       where: { id: parseInt(id) },
     });
-    if (!car) {
-      return res.status(404).json({ error: 'Mobil tidak ditemukan' });
+    if (!car || car.isDeleted) {
+      return res.status(404).json({ error: 'Gaada data mobilnya' });
     }
     res.status(200).json(car);
   } catch (error) {

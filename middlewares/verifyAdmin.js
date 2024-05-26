@@ -4,8 +4,8 @@ const verifyAuth = (req, res, next) => {
     if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
       return res.status(401).json({
         success: false,
-        message: 'Unauthorized',
-        err: 'You are not authorized to access this resource',
+        message: 'BUKAN ADMIN ATAU SUPER ADMIN',
+        err: 'unauthorized',
         data: null,
       });
     }

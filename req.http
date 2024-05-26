@@ -43,3 +43,5 @@ GET http://localhost:9000/api/auth/user
 GET http://localhost:9000/api/cars/show
 ###
 GET http://localhost:9000/api/cars/show/2
+####
+GET http://localhost:9000/api/cars/show/small

@@ -8,18 +8,18 @@ import { createSchema, loginSchema,createSchemaSuper } from '../validations/auth
 const ensureSuperAdmin = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+    return res.status(401).json({ success: false, message: 'BUKAN SUPER ADMIN' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (decoded.role !== 'SUPER_ADMIN') {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
+      return res.status(403).json({ success: false, message: 'BUKAN SUPER ADMIN' });
     }
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
+    return res.status(401).json({ success: false, message: 'BUKAN SUPER ADMIN' });
   }
 };
 
@@ -44,7 +44,7 @@ const login = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: 'User Tidak di temukan',
         data: null,
       });
     }
@@ -54,7 +54,7 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return res.status(400).json({
         success: false,
-        message: 'Wrong email or Password',
+        message: 'Email atau password salah',
         data: null,
       });
     }
@@ -103,7 +103,7 @@ const createUser = async (req, res, next) => {
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: 'Email already in use',
+        message: 'Email Sudah di gunakan',
         data: null,
       });
     }
@@ -121,7 +121,7 @@ const createUser = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Created Successfully!',
+      message: 'Berhasil membuat akun',
       data: newUser,
     });
   } catch (error) {
@@ -151,7 +151,7 @@ const createAdmin = async (req, res, next) => {
     if (user) {
       return res.status(404).json({
         success: false,
-        message: 'User already exists',
+        message: 'Admin sudah ada!',
         data: null,
       });
     }
@@ -169,7 +169,7 @@ const createAdmin = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Admin Created Successfully!',
+      message: 'Admin Berhasil dibuat!',
       data: newAdmin,
     });
   } catch (error) {
@@ -198,7 +198,7 @@ const createSuperAdmin = async (req, res, next) => {
     if (user) {
       return res.status(404).json({
         success: false,
-        message: 'User already exists',
+        message: 'Super admin sudah ada',
         data: null,
       });
     }
@@ -207,7 +207,7 @@ const createSuperAdmin = async (req, res, next) => {
 
     const newSuperAdmin = await prisma.User.create({
       data: {
-        name:'saya SUPER ADMIN',
+        name:'SUPER ADMIN',
         email,
         password: encryptedPassword,
         role: 'SUPER_ADMIN',
