@@ -4,23 +4,12 @@ import jwt from 'jsonwebtoken';
 import {prisma } from '../libs/prisma.js';
 import { createSchema, loginSchema,createSchemaSuper } from '../validations/auth.validation.js';
 
-// Middleware to ensure only super admins can create admins or super admins
-const ensureSuperAdmin = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'BUKAN SUPER ADMIN' });
-  }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'SUPER_ADMIN') {
-      return res.status(403).json({ success: false, message: 'BUKAN SUPER ADMIN' });
-    }
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ success: false, message: 'BUKAN SUPER ADMIN' });
-  }
+// Helper
+const generateTokens = (user) => {
+  const accessToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  const refreshToken = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_REFRESH_SECRET, { expiresIn: '1d' });
+  return { accessToken, refreshToken };
 };
 
 // login user
@@ -59,25 +48,23 @@ const login = async (req, res, next) => {
       });
     }
 
-    const payload = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    };
+    const { accessToken, refreshToken } = generateTokens(user);
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '1d',
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000
     });
 
     return res.status(200).json({
       success: true,
       message: 'Login success',
-      data: token,
+      data: accessToken,
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 // create user
 const createUser = async (req, res, next) => {
@@ -97,7 +84,7 @@ const createUser = async (req, res, next) => {
 
     // Check if email is already in use
     const existingUser = await prisma.User.findUnique({
-      where: { email }, // Use email as a unique identifier
+      where: { email }, 
     });
 
     if (existingUser) {
@@ -235,11 +222,36 @@ const getUserAll = async (req,res,next)=>{
 
 };
 
+// Who I Am
+const getMe = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, email: true, role: true, createdAt: true, updatedAt: true } 
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User tidak ada' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Here Iam',
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 export {
   login,
   createUser,
   getUserAll,
   createAdmin,
   createSuperAdmin,
-  ensureSuperAdmin
+  getMe
 };

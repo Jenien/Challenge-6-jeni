@@ -1,18 +1,14 @@
+import 'dotenv/config';
 import jwt from 'jsonwebtoken';
-const { JWT_SECRET } = process.env;
 
 const verifyToken = (req, res, next) => {
-  if (req.headers.authorization === undefined)
-    return res.status(401).json({
-      success: false,
-      message: 'Unauthorized, need Token',
-      err: 'No token provided',
-      data: null,
-    });
 
-  const token = req.headers.authorization.split(' ')[1];
+  const authHeader = req.headers.authorization;
+  const token = authHeader ? authHeader.split(' ')[1] : null;
 
-  if (!token) {
+  const cookieToken = req.cookies?.refreshToken;
+
+  if (!token && !cookieToken) {
     return res.status(401).json({
       success: false,
       message: 'Unauthorized, need Token',
@@ -20,10 +16,11 @@ const verifyToken = (req, res, next) => {
       data: null,
     });
   }
+  const jwtToken = token || cookieToken;
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+  jwt.verify(jwtToken, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      res.status(401).json({
+      return res.status(401).json({
         success: false,
         message: 'Unauthorized',
         err: err.message,

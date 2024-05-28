@@ -22,7 +22,7 @@ POST http://localhost:9000/api/auth/login
 Content-Type: application/json
 
 {
-    "email":"admin1@gmail.com",
+    "email":"admin3@gmail.com",
     "password":"oke123"
 }
 
@@ -31,8 +31,8 @@ POST http://localhost:9000/api/auth/login
 Content-Type: application/json
 
 {
-    "email":"super@gmail.com",
-    "password":"super1"
+    "email":"super2@gmail.com",
+    "password":"oke123"
 }
 ###
 GET http://localhost:9000/api/auth/user
@@ -43,5 +43,6 @@ GET http://localhost:9000/api/auth/user
 GET http://localhost:9000/api/cars/show
 ###
 GET http://localhost:9000/api/cars/show/2
+
 ####
-GET http://localhost:9000/api/cars/show/small
+GET http://localhost:9000/api/cars/show/type/medium

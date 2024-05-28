@@ -131,7 +131,7 @@ const deleteCar = async (req, res) => {
 
 
 
-const getAllCars = async (req, res) => {
+const getAvailCars = async (req, res) => {
   try {
     const cars = await prisma.car.findMany({
       where: { isDeleted: false },
@@ -142,9 +142,24 @@ const getAllCars = async (req, res) => {
   }
 };
 
+//all car
+const getAllCars = async (req,res)=> {
+  try {
+    const cars = await prisma.car.findMany(); 
+    res.status(200).json(cars);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve car data' });
+  }
+};
+
 const getCarsByType = async (req, res) => {
   const { type } = req.params;
   try {
+    console.log('Received type:', type);
+    if (!['small', 'medium', 'large'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid car type' });
+    }
+
     const cars = await prisma.car.findMany({
       where: {
         carType: type,
@@ -153,26 +168,27 @@ const getCarsByType = async (req, res) => {
     });
     res.status(200).json(cars);
   } catch (error) {
+    console.error('Error fetching cars by type:', error);
     res.status(500).json({ error: 'Gagal menampilkan data mobil berdasarkan tipe' });
   }
 };
-
 const getCarById = async (req, res) => {
   const { id } = req.params;
   try {
     const car = await prisma.car.findUnique({
       where: { id: parseInt(id) },
     });
-    if (!car || car.isDeleted) {
-      return res.status(404).json({ error: 'Gaada data mobilnya' });
+    if (!car) {
+      return res.status(404).json({ error: 'Car data not found' });
     }
     res.status(200).json(car);
   } catch (error) {
-    res.status(500).json({ error: 'Gagal mengambil data mobil' });
+    res.status(500).json({ error: 'Failed to fetch car data' });
   }
 };
 
 export {
+  getAvailCars,
   getAllCars,
   getCarsByType,
   getCarById,
