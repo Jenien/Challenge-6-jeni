@@ -13,7 +13,7 @@ POST http://localhost:9000/api/auth/login
 Content-Type: application/json
 
 {
-    "email":"uxup@gmail.com",
+    "email":"sahey@gmail.com",
     "password":"oke123"
 }
 
@@ -26,12 +26,12 @@ Content-Type: application/json
     "password":"oke123"
 }
 
-###
+####
 POST http://localhost:9000/api/auth/login
 Content-Type: application/json
 
 {
-    "email":"super2@gmail.com",
+    "email":"superadmin@gmail.com",
     "password":"oke123"
 }
 ###

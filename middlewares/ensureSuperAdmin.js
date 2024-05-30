@@ -4,8 +4,9 @@ import jwt from 'jsonwebtoken';
 // Middleware 
 const ensureSuperAdmin = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
+
   if (!token) {
-    return res.status(401).json({ success: false, message: 'BUKAN SUPER ADMIN' });
+    return res.status(401).json({ success: false, message: 'Access Denied,no token provded' });
   }
 
   try {
